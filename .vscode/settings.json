@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "E:/Program Files/IDA Pro 8.3/python/3/"
+    ],
+}
