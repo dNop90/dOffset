@@ -12,7 +12,6 @@ PLUGIN_NAME = "dOffset"
 
 import idc
 import idaapi
-import idautils
 import PyQt5.QtGui as QtGui
 import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as QtWidgets
@@ -49,6 +48,7 @@ class dOffset(idaapi.plugin_t):
     ACTION_NAME_MAINCTX = "dOffset"
     ACTION_NAME_GETOFFSET = "dOffset:GetOffset"
     ACTION_NAME_GETMODULEWITHOFFSET = "dOffset:GetModuleWithOffset"
+    ACTION_NAME_JUMPTOOFFSET = "dOffset:JumpToOffset"
     def AddActions(self):
         action_desc_offset = idaapi.action_desc_t(
             self.ACTION_NAME_GETOFFSET,
@@ -64,12 +64,31 @@ class dOffset(idaapi.plugin_t):
             None,
             "Get current module name with current address offset"
         )
+        action_desc_jump_offset = idaapi.action_desc_t(
+            self.ACTION_NAME_JUMPTOOFFSET,
+            "Jump to offset",
+            JumpToOffsetHandler(),
+            None,
+            "Jump to address offset"
+        )
+
         idaapi.register_action(action_desc_offset)
         idaapi.register_action(action_desc_module_offset)
+        idaapi.register_action(action_desc_jump_offset)
+
+        self.AttachActionToMenu()
+
+    def AttachActionToMenu(self):
+        idaapi.attach_action_to_menu(
+            "Jump/dOffset/",
+            self.ACTION_NAME_JUMPTOOFFSET,
+            idaapi.SETMENU_APP
+        )
     
     def RemoveAllActions(self):
         idaapi.unregister_action(self.ACTION_NAME_GETOFFSET)
         idaapi.unregister_action(self.ACTION_NAME_GETMODULEWITHOFFSET)
+        idaapi.unregister_action(self.ACTION_NAME_JUMPTOOFFSET)
 
 
 def PLUGIN_ENTRY():
@@ -133,7 +152,7 @@ class Hooks(idaapi.UI_Hooks):
         return 0
 
 
-#Action right click
+#Action Handlers
 class GetOffsetHandler(idaapi.action_handler_t):
     def __init__(self):
         idaapi.action_handler_t.__init__(self)
@@ -168,3 +187,39 @@ class GetModuleOffsetHandler(idaapi.action_handler_t):
     
     def update(self, ctx):
         return idaapi.AST_ENABLE_ALWAYS
+    
+class JumpToOffsetHandler(idaapi.action_handler_t):
+    def __init__(self):
+        idaapi.action_handler_t.__init__(self)
+        
+    def activate(self, ctx):
+        InputOffset = idaapi.ask_str("", 0, "Offset:")
+        if (InputOffset is None):
+            return 1
+        
+        if "0x" in InputOffset:
+            InputOffset = InputOffset.replace("0x", "")
+
+        if(not is_hex(InputOffset)):
+            print("[%s] Invalid offset value %s" % (PLUGIN_NAME, InputOffset))
+            return 1
+        
+        InputOffsetInt = int(InputOffset.lower(), 16)
+        AddressToJump = idaapi.get_imagebase() + InputOffsetInt
+        if(idaapi.jumpto(AddressToJump)):
+            print("[%s] 0x%X -> %X" % (PLUGIN_NAME, InputOffsetInt, AddressToJump))
+        else:
+            print("[%s] Failed to jump to address with offset 0x%X" % (PLUGIN_NAME, InputOffsetInt))
+
+        return 1
+    
+    def update(self, ctx):
+        return idaapi.AST_ENABLE_ALWAYS
+
+#Other
+def is_hex(s):
+    try:
+        int(s.lower(), 16)
+        return True
+    except ValueError:
+        return False
