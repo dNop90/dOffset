@@ -1,5 +1,5 @@
 # dOffset
-dOffset is a plugin designed for IDA Pro and Cheat Engine, offering a convenient way to obtain the offset of the current module. This enables users to easily navigate to specific addresses in other reverse engineering software. It is particularly useful when performing static analysis of a file while simultaneously debugging with multiple tools, including IDA Pro, Cheat Engine, x64dbg, and others.
+dOffset is a plugin designed for IDA Pro and Cheat Engine, offering a convenient way to obtain the offset of the current module. This enables users to navigate to specific addresses in other reverse engineering software easily. It is beneficial when performing static analysis of a file while simultaneously debugging with multiple tools, including IDA Pro, Cheat Engine, x64dbg, and others.
 
 
 ## IDA Pro
