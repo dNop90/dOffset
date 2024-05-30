@@ -7,7 +7,7 @@ function GetOffsetResult(Address, bWithModuleName)
         return nil
     end
 
-    local ModuleName = getNameFromAddress(Address)
+    local ModuleName = getNameFromAddress(Address, _, false)
     if(isHex(ModuleName)) then
         return nil
     end
